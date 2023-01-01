@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Introdução ao aprendizado de máquina: Métricas de Avaliação</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Oscar J. O. Ayala" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# Introdução ao aprendizado de máquina: Métricas de Avaliação
+]
+.author[
+### Oscar J. O. Ayala
+]
+
+---
+
+
+
+
+- Talvez Machine Learning (ML) seja a metodologia mais popular em **Data Science**. Seu diferencial é que suas decisões são **baseadas** em algoritmos *construídos com dados*.
+
+- Este material é baseado no capítulo 27 do
+livro *Data Analysis and Prediction Algorithms with R* (Irizarry, 2022)&lt;sup&gt;1&lt;/sup&gt;.
+
+&lt;img src="01_Figure.jpg" width="30%" height="30%" style="display: block; margin: auto 0 auto auto;" /&gt;
+
+.footnote[
+[1] http://rafalab.dfci.harvard.edu/dsbook/introduction-to-machine-learning.html 
+]
+
+---
+
+# Abordagem de ML
+
+
+- Primeiro, treinar (**train**) o algoritmo usando um conjunto de recursos disponíveis para prever um conjunto de resultados observados. O que implica a optimização do algoritmo.
+
+--
+
+- Em segundo lugar, testar (**teste**) o algoritmo usando um conjunto de recursos disponíveis para prever um conjunto de resultados que se fingem que não ser observados. Para de fingir que não sabe o resultado para avaliar o algoritmo, mas só depois que terminarmos de construí-lo. Resultando em avaliação de algoritmo.
+
+--
+
+- Terceito, prever (**hat**) um conjunto de resultados não observados usando um conjunto de variáveis disponíveis. 
+
+---
+# Notação 
+
+Em *ML* os dados vem de dois tipos: 
+- Os **resultados** que se desejam prever.
+- Os **recursos (variáveis)** disponíveis para prever os resultados. 
+
+Assim, os resultados são representados por `\(Y\)`, enquanto os recursos por `\(x_1, \ x_2, \dots x_n\)`, `\(n \in Z_{+}\)`. 
+
+---
+# Tarefas de ML
+
+- Quando o resultado é contínuo, diz-se que a tarefa de *ML* é de *previsão*. Portanto, pode-se obter um erro que nos diz quão próximas as previsões estão dos resultados reais. Uma maneira comum é fazer `\(y - \hat{y}\)`, `\(\hat{y} = f(x_1, x_2, \dots x_n)\)`.
+
+- Quando o resultado é categórico, a tarefa de *ML* é de *classificação*. A saída principal obedece a uma regra de decisão que prescreve qual das classes *K* deve ser prevista. A função de recursos ou preditores para cada classe *k* tomada como regra de decisão é dada por `\(f_k(x_1, x_2, \dots x_n)\)`. Para o caso binário específico, temos,
+
+
+$$
+`\begin{equation}
+\left\{\begin{array}{l}
+\text{Se,} \ f_1(x_1, \ x_2, \dots x_n) &gt; C, \ \text{prever} \  1\\
+\text{C.C., prever} \ 0 
+\end{array}\right.
+\end{equation}`
+$$
+---
+
+# Métricas de avaliação
+
+- Definir o conceito de *melhor* entre um conjunto de abordagens.
+- Descrever a forma como os algoritmos *ML* são avaliados.
+
+## Caso de estudo
+
+Se quer **prever o sexo** de uma pessoa pela **altura**. É usado o conjunto de dados disponível no data frame `dslabs::heights`, que apresenta as alturas auto concedidas em polegadas para um total de `1050` homens e mulheres. São construidos dos algoritmos, sendo necessário avaliar e escolher o melhor.
+
+Na verdade, o recurso **altura** não é suficiente para prever o sexo, mas como o objetivo é ilustrar os métodos de avaliação, suponha que não haja problemas com essa abordagem simplista.
+
+Usa-se como recurso computacional o software **R** e os pacotes `caret`, `tidyverse`, `dslabs`, `ggrepel` e`gridExtra`.
+
+---
+# Analises descritiva
+
+
+```r
+# pacotes
+require(caret)
+require(tidyverse)
+require(dslabs)
+require(ggrepel)
+require(gridExtra)
+
+# dados
+dat &lt;- dslabs::heights
+
+# Tabela descritiva
+dat %&gt;% 
+  dplyr::group_by(sex) %&gt;%
+  dplyr::summarise(n = n(), 
+                   mean = round(mean(height), 2), 
+                   sigma = round(sd(height), 2),
+                   .groups = "drop") %&gt;%
+  knitr::kable(caption = "Descritive") -&gt; tab1
+```
+
+---
+
+Na Tabela e Figura a seguir, pode-se observar que a dispersão das *alturas* de homens e mulheres são semelhantes. No entanto, a média e a prevalência parecem ser maiores para os homens.
+
+
+Table: Descritive
+
+|sex    |   n|  mean| sigma|
+|:------|---:|-----:|-----:|
+|Female | 238| 64.94|  3.76|
+|Male   | 812| 69.31|  3.61|
+
+&lt;img src="01_introducao_machine_learning_files/figure-html/chunk1-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Box plot 
+
+Existem outliers em ambos os casos, mas como são consistentes, permanecem. Há indícios de que a estatura média geral dos homens seja maior que a das mulheres, mas a dispersão é semelhante.
+
+&lt;img src="01_introducao_machine_learning_files/figure-html/chunk2-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Função de densidade por sexo vs N(0, 1)
+
+Observa-se que a distribuição das alturas das pessoas, independentemente do sexo, não apresenta assimetria acentuada em relação a `\(N(0, 1)\)`. No entanto, devido a possíveis outlier, parece que a densidade das alturas das mulheres se desviam marcadamente da normal padrão.
+
+
+
+&lt;img src="01_introducao_machine_learning_files/figure-html/chunk4-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+# QQ - plot
+
+Há indícios de que as alturas de homens e mulheres se desviam do padrão normal, sendo o problema mais *pronunciado* para as últimas. 
+
+
+
+```
+## [1] 795 808
+```
+
+&lt;img src="01_introducao_machine_learning_files/figure-html/chunk5-1.png" style="display: block; margin: auto;" /&gt;
+
+```
+## [1] 229  68
+```
+
+
+---
+
+# Counjunto Treino e Teste
+
+Define-se o conjunto de recursos disponíveis e resultados a prever, para os passos de treino e teste. 
+
+
+
+```r
+# indice de selecao aleatorio
+set.seed(2022)
+index &lt;- caret::createDataPartition(y = dat$sex,
+                                    times = 1,
+                                    p = 0.5,
+                                    list = FALSE) %&gt;% 
+  as.vector()
+
+# conjunto de dados traino e teste
+trainSet &lt;- dat[-index, ]
+testSet  &lt;- dat[index, ]
+```
+
+---
+# Métodos Sample vs Cutoff: Trainamento
+
+- Sample: Consiste em criar uma amostra construída com dados, para diferentes probabilidades, `\(1 - p\)`, de escolha da classe *Mulher*.
+
+
+
+```r
+## probabilidades de escolha classe homem
+p &lt;- seq(0, 1, 0.1)
+
+## Treinamento
+methodSample &lt;- purrr::map_dbl(p, function(x){
+
+  # prever
+  preGeral &lt;- numeric()
+  
+  for(i in 1:100){
+
+      yHat &lt;- base::sample(x = base::levels(trainSet$sex),
+                           size = base::length(trainSet$sex),
+                           replace = TRUE,
+                           prob = c(x, 1 - x)) %&gt;% 
+        base::factor(levels =  base::levels(trainSet$sex))
+  
+  # metricas de avaliacao: precisao geral
+      
+  preGeral[i] &lt;- round(unique(caret::confusionMatrix(dat = yHat, 
+                                                     reference = trainSet$sex)$overall[1]), 2)
+  }
+  
+  mean(preGeral)
+  
+  })
+```
+---
+
+- cutoff: Consiste na criação de um algoritmo que faz diferentes corte (`&gt;=`) na altura das pessoas e lhes atribui um sexo.
+
+
+```r
+## cortes
+cut &lt;- seq(round(mean(dat$height) - 2 * sd(dat$height), 0), 
+           round(mean(dat$height) + 2 * sd(dat$height), 0))
+
+## Treinamento
+methodCutoff &lt;- purrr::map_dbl(cut, function(x){
+
+  # prever
+yHat &lt;- dplyr::case_when(trainSet$height &gt;= x ~ "Male",
+                               TRUE ~ "Female") %&gt;% 
+    base::factor(levels = base::levels(trainSet$sex))
+      
+  # metricas de avaliacao: presicao geral
+  preGeral &lt;- round(unique(caret::confusionMatrix(dat = yHat, 
+                                                     reference = trainSet$sex)$overall[1]), 2)
+  
+  return(preGeral) })
+```
+---
+# Treinamento: Presição Geral
+
+- A presição geral é a proporção geral prevista corretamente.
+
+- Na Figura pode ser visto que a relação entre a precisão geral e o parâmetro `\(p\)` no método *Sample* parece ser fortemente negativa. Isso pode ser devido à prevalência de homens no conjunto de dados. Observe que quando `\(p = 0,5\)`, a previsão geral é de `\(0,5\)`, ou seja, se está adivinhando. A melhor probabilidade é `\(p = 0\)`.
+
+&lt;img src="01_introducao_machine_learning_files/figure-html/unnamed-chunk-6-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+A partir da figura acima, tem-se que a relação entre os cortes (*cutoff*) e a presição geral parece ser representada por uma curva de segundo grau. Atingindo seu máximo (`0.83`) quando `cut = 65`.
+
+#Sample vs Cutoff: Teste
+
+Na tabela abaixo, o método de corte de altura funciona melhor. No entanto, deve-se levar em conta que há uma alta predominância de homens, e a pressão geral é sensível à prevalência. Portanto, é importante aplicar outras métricas de avaliação.
+
+
+```
+## [1] 1
+```
+
+
+
+| Sample Method| Cutoff Method|
+|-------------:|-------------:|
+|          0.77|          0.84|
+---
+# Matriz de confusão
+
+- A **matriz de confusão** permite definições precisas de outras métricas de precisão, normalmente possui quatro entradas.
+
+|  | realmente positivo = 1| realmente negativo = 0|
+| :--- | :--- | :--- |
+| Previsão positiva = 1| Verdadeiros positivos (TP) | Falsos positivos (FP) |
+| Negativo previsto = 0| Falsos negativos (FN) | Verdadeiros negativos (TN) |
+
+
+- Logo, as formas de médidas de avaliação mais importantes são dadas por:
+
+| Medida de | Nome | Nome 2 | Definição | Representação de probabilidade |
+| ---: | ---: | :--- | :--- | :--- |
+| Sensibilidade | TPR | recall | PT/(PT+FN) | Pr( hat(Y)=1∣Y=1) |
+| Especificidade | TNR | 1-FPR | TN/(TN+PF) | Pr( hat(Y)=0∣Y=0) |
+| Especificidade | PPV | Precisão | PT/(PT+PF) | Pr(Y=1∣ hat(Y)=1) |
+
+---
+# Estrutura da matriz de confusão: estudo de caso
+
+- Tomando como referência a classe *mulher*, a estrutura da matriz de confusão é dada por:
+
+|  | realmente mulher = 1| realmente homem = 0|
+| :--- | :--- | :--- |
+| Previsão mulher = 1| Verdadeiros positivos (TP) | Falsos positivos (FP) |
+| Previsão homem = 0| Falsos negativos (FN) | Verdadeiros negativos (TN) |
+
+- Observe que os valores dentro da matriz são preenchidos de acordo com o algoritmo construído e seus argumentos.
+
+---
+
+# Precisão equilibrada e pontuação  
+
+- Esta é uma métrica preferida em *relação* a precisão geral, sendo a média harmônica de sensibilidade e especificidade &lt;sup&gt;1&lt;/sup&gt;. 
+
+- O conceito por trás disso se refere ao fato de que muitas vezes há erros que custam mais do que outros. Por exemplo, em um caso de homicídio criminal, tomar uma decisão com base em um *falso positivo* levaria à execução de uma pessoa inocente. Portanto, é mais importante maximizar a sensibilidade do que a especificidade.
+
+- A função `\(F_1 \ \text{Score}\)` foi adaptada definindo um `\(\beta\)` para representar a importância da sensibilidade (recall) sobre a especificidade, dada por:
+
+$$
+\frac{1}{\frac{\beta^2}{1+\beta^2} \frac{1}{\text { recall }}+\frac{1}{1+\beta^2} \frac{1}{\text { precision }}}
+$$
+
+.footnote[
+[1] porque a TPR e TNR são probabilidades.  
+]
+---
+# F1 vs Cutoff: Trainamento
+
+- Considera-se `\(\beta = 1\)` o que leva a encontrar um corte (cut) que equilibre as duas taxas. O resultado indica que o melhor corte na altura para a classe masculina esta dado por `&gt;= 66`. 
+
+
+&lt;img src="01_introducao_machine_learning_files/figure-html/unnamed-chunk-8-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+# F1 vs Cutoff: Teste
+
+- A tabela a seguir mostra que o Teste Algorítmico possui sensibilidade (`0,63`) e especificidade (`0,89`) mais equilibradas, sendo ambas relativamente altas. Observe que uma altura maior ou igual a `66` parece mais lógica para prever a classe `Masculino` do que `&gt;= 65`, pois a altura média da amostra em homens é maior.
+
+- Até agora, o método *Cutoff* parece melhor do que o método *Sample*. No entanto, dada a prevalência da classe *Masculino* nos dados, outras métricas devem ser avaliadas antes de indicar a melhor abordagem.
+
+
+| cut| sensibilidade| especificidade|
+|---:|-------------:|--------------:|
+|  66|          0.63|           0.89|
+
+---
+
+# ROC: FPR vs Sensibilidade
+
+- No caso em estudo, a classe positiva (`Y = 1`) refere-se a `Female`, e a negativa (`Y = 0`) a `Male`.  
+
+- Neste estudo, a prevalência pode levar a considerar um modelo com menor sensibilidade. Uma vez que na presição geral as poucas previsões positivas corretas são compensadas pelas previsões negativas corretas, ou os altos erros das previsões positivas são compensados pelas previsões negativas corretas.
+
+- Observe que o método *Sample* tem o melhor parâmetro `\(p = 0\)`, o que dá uma presição geral mais alta, mas um custo de sensibilidade menor. O que pode estar acontecendo com o método `cutoff`. Assim, resulta conveniente aplicar outras diferentes métricas de avaliação. 
+
+- O gráfico ROC&lt;sup&gt;1&lt;/sup&gt; permite analisar a perda de sensibilidade em relação à especificidade. Este gráfico é feito abaixo.
+
+.footnote[
+[1] *Receive Operating Characteristic*
+]
+
+---
+# ROC: FPR vs Sensibilidade
+
+O gráfico mostra dos tipos de relação positiva entre FPR vs. Sensibilidade. O método *Sample* apresenta um crescimento linear próximo à linha identidade, enquanto ao método *Cutoff* parece que uma curva de segundo grau representa a relação entre as variáveis. Note, que o método *Cutoff* tem uma sensibilidade maior para todos os valores de FPR em comparação com o método *Sample*. Logo, o corte de alturas parece uma abordagem melhor.
+
+&lt;img src="01_introducao_machine_learning_files/figure-html/unnamed-chunk-10-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+# ROC: Sensibilidade vs Previsão
+
+Agora, como há prevalência de uma classe, se pode usar as métricas de sensibilidade e previsão. Sem importar a classe de referência positiva, o método *Sample* tem indícios de manter uma presição aproximadamente constante para todos os valores de sensibilidade. A presição parece ser maior para o método *Cutoff* para todos os valores da sensibilidade. Pela prevalência da classe *Masculino*.
+
+Quando a designação positiva *Feminino* é alterada para *Masculino*, a sensibilidade é mantida, mas o presição parece aumentar substancialmente, devido ao domínio da classe masculina. No entanto, suspeita-se que a abordagem *Cutoff* seja a melhor.
+
+&lt;img src="01_introducao_machine_learning_files/figure-html/unnamed-chunk-11-1.png" style="display: block; margin: auto;" /&gt;
+---
+
+# Referência
+
+- Irizarry, A. R. (2022). *Data Analysis and Prediction Algorithms with R*. Disponível no [link](http://rafalab.dfci.harvard.edu/dsbook/introduction-to-machine-learning.html)
+
+- Wickham H. and Grolemund G. *R for Data Science*. Disponível no [link](https://r4ds.had.co.nz/index.html)
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
