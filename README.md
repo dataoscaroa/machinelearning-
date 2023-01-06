@@ -1,2 +1,2 @@
 # machinelearning-
-Este repositório trata dos principais tópicos relacionados ao Machine Learning.
+Este repositório aborda os principais tópicos relacionados ao Machine Learning.
