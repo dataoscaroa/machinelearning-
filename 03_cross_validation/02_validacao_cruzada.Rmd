@@ -1,0 +1,146 @@
+---
+title: "Validação Cruzada (Cross validation)"
+author: "Oscar J. O. Ayala"
+date: "2023"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# k-vizinhos mais próximos (k-nearest neighbors)
+
+No seguinte exemplo, se tem uma variável de resposta $Y = 0, \text{ se igual a } 2 \text{, e } 1 \text{ se for igual a } 7$ com dois preditores $X_1 \text{ e } X_2$, o que diz que a tarefa de ML é de classificação. A Figura 1, mostra o gráfico de dispersão dos recursos $X_1$ e $X_2$ segundo sua associação a $Y$.
+
+```{r eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+
+# limpar variáveis
+rm(list = ls())
+
+# pacotes
+library(tidyverse)
+library(dslabs)
+
+# dados
+data("mnist_27")
+train <- mnist_27$train
+teste <- mnist_27$test
+
+# gráfico de dispersão
+train %>% 
+  ggplot2::ggplot(ggplot2::aes(x_1, x_2, colour = y)) + 
+  ggplot2::geom_point() +
+  ggplot2::ggtitle("Figura 1. Recursos segundo resposta") +
+  ggplot2::theme_light()
+
+
+```
+
+
+Logo, se precisa estimar a probabilidade condicional $P(Y = y|X_1 = x_1, X_2 = x_2) = P_{Y = y}(X_1 = x_1, X_2 = x_2) = P_{y}(x_1, x_2)$. Usa-se o pacote **caret** com a equação $Y = X_1 + X_2$ ou na forma do pacote `Y ~ X_1 + X_2`. Os dados estão balanceados, $y = 2 \text{ com 47.4% dos dados, e, } y = 7 \text{ com 52.6% dos dados}$. 
+
+```{r eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+prop.table(table(train$y)) %>% 
+  knitr::kable(col.names = c("y", "proporção"), caption = "Distribuição do conjunto train segundo níveis do fator y") 
+```
+
+Assim, se ajusta o modelo com o conjunto *training* incluindo `5` vizinhos, i.e, $k = 5$.
+
+```{r eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+library(caret)
+
+# prever
+knn_ajust_train <- caret::knn3(y ~ ., data = train, k = 5)
+y_prevtrain_knn <- predict(knn_ajust_train, train, type = "class")
+
+# avaliar: precisão geral
+confusionMatrix(y_prevtrain_knn, train$y)$overall["Accuracy"] %>% round(2)
+
+```
+
+Acima `predict` é uma função genérica que realiza a previsão de acordo com o modelo ajustado, ela admite vários modelos como regressão linear, *KNN* e outros. O primeiro argumento da função é o modelo ajustado, como o segundo argumento os dados e tem o argumento não obrigatório `type` que se refere ao tipo de tarefa. 
+
+Se obtém a probabilidade para cada classe com a função `predict`e se faz a avaliação do modelo, 
+
+```{r eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+# prever
+knn_ajust_teste <- caret::knn3(y ~ ., data = teste, k = 5)
+y_prevteste_knn <- predict(knn_ajust_teste, teste, type = "class")
+
+# avalar
+confusionMatrix(y_prevteste_knn, teste$y)$overall["Accuracy"] %>% round(2)
+
+```
+Observe que a precisão geral no passo de *treinamento* é maior do que o passo de *teste* em um $0.06$. O que apresenta um *Over-training* (treinamento excessivo).
+
+# Escolhindo K em *KNN*
+
+Um *K* muito pequeno como *1* fornecerá uma previsão perfeita, pois o modelo está usando como previsão a mesma observação. Um *K* muito grande pode não permitir flexibilidade suficiente (suavização excessiva). Em principio, se quer um *K* que maximize a precisão global ou minimize a `EQM`, assim precisa um método especial. 
+
+# Validação cruzada K-fold
+
+- O desafio do ML é construir um algoritmo com um conjunto de dados observados, $\{y_1, y_2, \cdots, y_n \}$, que eventualmente será usado em conjuntos de dados independentes, $\{y^*_1, y^*_2, \cdots, y^*_n \}$. 
+
+- Porém não se tem o conjunto de dados independentes.
+
+- Para simular essa situação, se dividem o conjunto de dados observados, $\{y_1, y_2, \cdots, y_n \}$, em um conjunto de dados *treinamento* $\{y_1, y_2, \cdots, y_{n_i} \}$ e um conjunto de dados *teste* $\{y_{n_i} + 1, y_{n_i} + 2, \cdots, y_n\}$. Treina-se o algoritmo apenas com o conjunto de *treinamento* e se faz sua avaliação exclusivamente com o conjunto *teste*. 
+
+- O calculo de $n_i$ corresponde a relação de ter um conjunto *treinamento* grande e um conjunto *teste* suficientemente grande. Escolhas típicas são, $n_i = n * 80\%$ ou $n_i = n * 90\%$. O que implica que o conjunto *teste* é de tamanho $20\% \text{ ou } 10\%$ dos dados.
+
+- Se precisa estimar o vector de parâmetros $\boldsymbol{\theta}$ do modelo de ML de tal modo que se obtenha o menor `EQM`. No entanto, se a optimização e avaliação é feita com o mesmo conjunto *treinamento* se teria um excesso treinamento. 
+
+## Optimização
+
+- O mesmo vector de parâmetros $\boldsymbol{\theta}$ é usado nos conjunto de treinamento cruzado. A previsão obtida usando $\boldsymbol{\theta}$ é denotada por $\hat{y}_i^b(\boldsymbol{\theta})$. Se deseja estimar o $MSE \text{ ou } EQM$
+
+$$
+\operatorname{MSE}(\boldsymbol{\theta})=\frac{1}{B} \sum_{b=1}^B \frac{1}{N} \sum_{i=1}^N\left(\hat{y}_i^b(\boldsymbol{\theta})-y_i^b\right)^2
+$$
+- Se consideram conjunto de amostras independentes. No caso do modelo *KNN* se faz *k* vezes. 
+
+Para obter as *k* amostras independentes e realizar a validação cruzada para o modelo de parâmetros optimizados se faz:
+
+- Primeiro simplesmente se escolhe $M = \frac{N}{k}$ observaçoes aleatórias (se redondeia $M$ se não for inteiro). 
+
+- As amostras aleatórias constituem o *conjunto de avaliação ou independente K*, $\{ y^*_1, y^*_2, \cdots, y^*_M\}$. As observações restantes se denominam *conjunto treinamento K* (Ver Figura 1).
+
+```{r eval=TRUE, echo=FALSE, hide=FALSE}
+knitr::include_graphics(path = "figura_validacao_cruzada_otimizacao_modelo.png")
+```
+
+
+- Com os *conjunto treinamento K* se treina o algoritmo e com o *conjunto de avaliação K* se obtém o erro aparente, $\hat{\operatorname{MSE}_b}(\boldsymbol{\theta})=\frac{1}{M} \sum_{i=1}^M\left(\hat{y}_i^b(\boldsymbol{\theta})-y_i^b\right)^2, \text{ com } b = 1, 2, \cdots, K$
+
+- Se obtém os $\hat{\operatorname{MSE}_1}(\boldsymbol{\theta}), \hat{\operatorname{MSE}_2}(\boldsymbol{\theta}), \cdots, \hat{\operatorname{MSE}_K}(\boldsymbol{\theta})$ como estimativa da perda se obtém a média,
+
+$$
+\hat{\mathrm{MSE}}(\boldsymbol{\theta})=\frac{1}{k} \sum_{b=1}^k \hat{\operatorname{MSE}_b}(\boldsymbol{\theta})
+$$
+
+## Validação
+
+Logo, a etapa final consiste em seleccionar $\boldsymbol{\theta}$ que minimize o $MSE$. Se usado o conjunto *teste* e se faz de novo a validação cruzada e se obtem a estimativa final da função perda. Este passo implica a *validação*. A Figura 1, mostra o processo. 
+
+
+```{r eval=TRUE, echo=FALSE, hide=FALSE}
+knitr::include_graphics(path = "figura_validacao_cruzada_validacao.png")
+```
+
+
+## Previsão
+
+Quando se estiver satisfeito com este modelo e se quiser disponibilizá-lo para outros (conjunto independente), se reajusta o modelo em todo o conjunto de dados, sem alterar os parâmetros optimizados.
+
+## Escolha de K
+
+Valores de $K$ muito grande levam a tempos computacionais maiores, por isso, as escolhas $K = 5 \text{ ou } 10$ são razoáveis. 
+
+# Referências 
+
+Irizarry, R. A. (2019).*Introduction to data science: Data analysis and prediction algorithms with R*. CRC Press. Dispinível em http://rafalab.dfci.harvard.edu/dsbook/cross-validation.html
+
+
