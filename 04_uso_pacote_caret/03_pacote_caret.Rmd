@@ -1,0 +1,126 @@
+---
+title: "O pacote caret"
+author: "Oscar J. O. Ayala"
+date: ""
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(eval = TRUE, echo = TRUE, 
+                      message = FALSE, warning = FALSE,
+                      error = FALSE)
+```
+
+# Introdução
+
+Os muitos dos algoritmos de Machine Learning (ML) são implementados no R. Porém, são desenvolvidos por diferentes pacotes, autores e sintaxes. O pacote *caret* tenta consolidar essas diferenças e fornecer consistência. Atualmente inclui *237* métodos diferentes que estão resumidos no [manual do pacote](https://topepo.github.io/caret/available-models.html). 
+
+# Dados
+
+Usa-se o conjunto de dados do pacote `mnist_27` querendo-se constriur um algoritmo que classifique as saídas $Y = 2 \text{ ou } 7$ com dois regressores $(X_1, X_2)$. 
+
+```{r}
+library(tidyverse)
+library(dslabs)
+data("mnist_27")
+```
+
+```{r echo=TRUE}
+train <- mnist_27$train
+teste <- mnist_27$test
+head(train, 5) %>% knitr::kable(digits = 2, caption = "Tabela 1. Conjunto train")
+head(teste, 5) %>% knitr::kable(digits = 2, caption = "Tabela 2. Conjunto teste")
+```
+
+
+## A função `caret::train`.
+
+Essa função permite aplicar diferentes algoritmo usando sintaxes semelhantes,
+
+```{r}
+# ajustar o modelo
+train_knn <- caret::train(y ~ ., method = "knn", data = train)
+train_glm <- caret::train(y ~ ., method = "glm", data = train)
+```
+
+```{r}
+# previsão conjunto teste
+hat_knn <- predict(train_knn, teste, type = "raw")
+hat_glm <- predict(train_glm, teste, type = "raw")
+```
+
+
+```{r}
+# precisao
+caret::confusionMatrix(hat_knn, teste$y)$overall[["Accuracy"]]
+caret::confusionMatrix(hat_glm, teste$y)$overall[["Accuracy"]]
+```
+
+## Validação cruzada
+
+Quando um algoritmo inclui um parâmetro de ajuste, `train` usa automaticamente a validação cruzada para decidir entre alguns valores padrão. 
+
+Também, se pode ver uma espercificação clara do modelo,
+
+```{r}
+modelLookup("knn") %>% knitr::kable()
+```
+
+Também é possível obter um gráfico da validação cruzada,
+
+```{r}
+ggplot2::ggplot(train_knn, highlight = TRUE) + 
+  ggplot2::labs(title = "Fig 1. Validação cruzada pelo método bootstrap", x = "K-vizinhos mais próximos", y = "Precisão Geral") +  
+  ggplot2::theme_light()
+  
+```
+
+
+Na Figura 1, a validação cruzada por padrão toma `25` amostras *bootstrap* composta por $25 \%$ das observações. No método `KNN` o padrão é $k = 5, 7, 9$, mas isso pode ser mudado. Vai se Ajustar o modelo para $30$ valores de `k`, usando `data.frame(k = seq(9, 67, 2))` no argumento `tuneGrid`. Isso equivale a $30 \times 25 = 750 \text{ modelos}$ que demora um pouco.
+
+```{r}
+# Se ajusta para 30 valores de k
+set.seed(2008)
+train_knn <- train(y ~ ., method = "knn", 
+                   data = train,
+                   tuneGrid = data.frame(k = seq(9, 71, 2)))
+ggplot(train_knn, highlight = TRUE) + 
+  ggplot2::labs(title = "Fig 1. Validação cruzada pelo método bootstrap", x = "K-vizinhos mais próximos", y = "Precisão Geral") +  
+  ggplot2::theme_light()
+```
+
+O parâmetro que maximizou foi $k = 27$,
+
+```{r}
+train_knn$bestTune
+```
+
+
+O modelo com melhor desempenho foi, 
+
+```{r}
+train_knn$finalModel
+```
+
+Com o modelo optimizado acima se avalia com o conjunto teste, a função `stats::predict` esse modelo final, 
+
+```{r}
+confusionMatrix(predict(train_knn, mnist_27$test, type = "raw"),
+                mnist_27$test$y)$overall["Accuracy"]
+```
+
+Algumas estatísticas úteis são:
+
+```{r}
+train_knn$results %>% head(n = 11) %>% knitr::kable()
+```
+
+
+
+
+
+
+
