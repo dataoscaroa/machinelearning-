@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Introdução ao aprendizado de máquina: conceitos básicos</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Oscar J. O. Ayala" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# Introdução ao aprendizado de máquina: conceitos básicos
+]
+.author[
+### Oscar J. O. Ayala
+]
+
+---
+
+
+
+
+- Talvez *Machine Learning* (*ML*) seja a metodologia mais popular em *Data Science*. Seu diferencial é que suas decisões são **baseadas** em algoritmos *construídos com dados*.
+
+- *ML* é a ciência (e a arte) de programar computadores para que possam aprender com os dados.
+
+- Este material é baseado na Parte I do
+livro *Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow* (Géron, 2023) e no Capítulo 3 do livro *Applied Predictive Modeling* (Kuhn e Johnson, 2016).
+
+
+&lt;img src="01_figura.png" width="50%" height="40%" style="display: block; margin: auto 0 auto auto;" /&gt;
+
+&lt;style&gt;
+img[src$='01_figura.png'] {
+  display: block;
+  margin: 0 auto;
+  position: fixed;
+  right: 5%;
+  bottom: 10%;
+}
+&lt;/style&gt;
+
+---
+# Em quais situações *ML* é uma ótima opção?
+
+- Problemas para os quais as soluções existentes exigem muitos ajustes finos ou longas listas de regras e condições. Um modelo de *ML* geralmente pode simplificar o código e ter um desempenho melhor do que a abordagem tradicional.
+
+- Problemas complexos para os quais o uso de uma abordagem tradicional não produz boa solução (as melhores técnicas de aprendizado de máquina talvez possam encontrar uma solução).
+
+- Ambientes flutuantes (um sistema de aprendizado de máquina pode ser facilmente treinado em novos dados, mantendo-os sempre atualizados). 
+
+- Obter insights sobre problemas complexos e grandes quantidades de dados.
+
+---
+# Exemplos de aplicações de *ML*
+
+- Segmentar os clientes com base em suas compras para que você possa criar uma estratégia de marketing diferente para cada segmento.
+
+- Prever a receita da sua empresa no próximo ano, com base em várias métricas de desempenho.
+
+- Recomendar um produto no qual um cliente possa estar interessado, com base em compras anteriores.
+
+- Detecção de fraude de cartão de crédito.
+
+- Analisar imagens de produtos em uma linha de produção para classificá-los automaticamente.
+
+---
+# Exemplos de aplicações de *ML*
+
+- Detetar de tumores em exames cerebrais.
+
+- Classificar automaticamente artigos de notícias.
+
+- Sinalizar automaticamente comentários ofensivos em fóruns de discussão.
+
+- Resumir documentos longos automaticamente.
+
+- Criar um *chatbot* ou um assistente pessoal.
+
+- Fazer um *app* reagir a comandos de voz.
+
+---
+
+# Tipos de sistemas de *ML*
+
+Existem muitos sistemas de *ML* que podem ser classificados de acordo com os seguintes critérios:
+
+- Sendo supervisionados durante o treinamento (supervisionado, não supervisionado, semi-supervisionado, auto-supervisionado e outros).
+
+- Segundo seu aprendizado de forma incremental em tempo real (online versus aprendizado em lote).
+
+- Segundo seu funcionamento simples comparando novos pontos de dados com pontos de dados conhecidos ou, em vez disso, detectando padrões nos dados de treinamento e construindo um modelo preditivo (aprendizagem baseada em instância versus aprendizagem baseada em modelo). 
+
+---
+
+# Combinação de sistemas de *ML*
+
+- Esses sistemas não são exclusivos e podem ser combinados.
+
+- Por exemplo, um filtro de *spam* de última geração pode aprender em tempo real usando um modelo de rede neural profunda treinado com exemplos de *spam* e *ham* fornecidos por humanos; isso o torna um sistema de aprendizado supervisionado, baseado em modelo e on-line.
+
+A continuação se abordam as definições dos sistemas de *ML*: *i)* Supervisionados, *ii)* Não supervisionados, e *iii)* reforço.
+---
+
+# Sistema de *ML* supervisionado: 
+
+- Aqui o conjunto de treinamento que alimenta ao algoritmo inclui as soluções desejadas, chamadas de rótulos (*label*). Assim, implica a supervisão de uma pessoa que realize os *label*. 
+
+- Tarefas típicas de *ML* supervisionados são: a **classificação** e **regressão**. Alguns modelos de regressão também podem ser usados para classificação, e vice-versa. Por exemplo, a **regressão logística** é comummente usada para classificação pois pode produzir um valor que corresponde à probabilidade de pertencente a uma determinada classe.
+
+---
+
+# Sistema de *ML* não supervisionado: 
+
+- Os dados de treinamento não são rotulados. O sistema tenta aprender sem um professor. 
+
+- Tarefas típicas de *ML* não supervisionados são: **clustering**, **algoritmos de visualização**, **redução de dimensão** (ou extração de características), **detecção de anomalias e novidades**.
+
+- Muitas vezes, é uma boa ideia tentar reduzir o número de dimensões em seus dados de treinamento usando um algoritmo de **redução de dimensão** antes de alimentá-lo para outro *ML* algoritmo (como um algoritmo de aprendizado supervisionado). Mas, pode levar a perda de informação. 
+
+---
+# Sistema de *ML* por reforço
+
+- Aqui o sistema de aprendizado, chamado neste contexto de agente, pode observar o ambiente, selecionar e executar ações e obter recompensas em troca (ou penalidades na forma de recompensas negativas, conforme mostrado na Figura abaixo). Ele deve então aprender por si mesmo qual é a melhor estratégia, chamada de política, para obter a maior recompensa ao longo do tempo. Uma política define qual ação o agente deve escolher quando estiver em uma determinada situação.
+
+
+&lt;img src="02_figura.png" width="" height="" style="display: block; margin: auto 0 auto auto;" /&gt;
+
+---
+# Principais desafios do aprendizado de máquina
+
+- A tarefa principal é selecionar um **modelo** e treiná-lo com alguns **dados**. 
+
+- No entanto, pode acontecer pelo menos um dos seguintes problemas: “dados ruins” e/ou “modelo ruim”. 
+
+---
+# Dados ruins: Quantidade insuficiente de dados de treinamento.
+
+- No *ML* são necessários muitos dados para que a maioria dos algoritmos de aprendizado de máquina funcione corretamente. 
+
+- Mesmo para problemas muito simples, normalmente se precisam de milhares de exemplos, e para problemas complexos, como reconhecimento de imagem ou fala, você pode precisar de milhões de exemplos (a menos que possa reutilizar partes de um modelo existente).
+
+---
+## Dados ruins: Dados de treinamento não representativos.
+
+- Para generalizar bem, é crucial que os dados de treinamento sejam
+representativo dos novos casos para os quais você deseja generalizar. Isso é verdade se você usa aprendizado baseado em instância ou aprendizado baseado em modelo.
+
+- É crucial usar um conjunto de treinamento que seja representativo dos casos para os quais você deseja generalizar. Isso geralmente é mais difícil do que parece: se a amostra for muito pequena, você terá ruído de amostragem (ou seja, dados não representativos como resultado do acaso), mas mesmo amostras muito grandes podem não ser representativas se o método de amostragem for falho. Isso é chamado de **viés de amostragem**.
+
+- Assim, é necessário um tamanho de amostra representativo não muito pequeno, produto de um método de aprendizagem não falho.
+
+---
+## Dados ruins: Dados de baixa qualidade
+
+- Se os dados de treinamento estiverem cheios de erros, outliers e ruídos (por exemplo, devido a medições de baixa qualidade), será mais difícil para o sistema detectar os padrões subjacentes, portanto, é menos provável que seu sistema tenha um bom desempenho. 
+
+- Vale a pena gastar tempo limpando seus dados de treinamento. A verdade é que a maioria dos cientistas de dados gasta uma parte significativa de seu tempo fazendo isso.
+
+---
+## Dados ruins: Recursos irrelevantes
+
+- Seleção de recursos (selecionar os recursos mais úteis para treinar entre os recursos existentes)
+
+- Extração de recursos (combinando recursos existentes para produzir um mais útil⁠ - como vimos anteriormente, algoritmos de redução de dimensionalidade pode ajudar)
+ 
+- Criar novos recursos reunindo novos dados
+
+---
+## Algoritmos ruins: Sobreajuste aos dados de treinamento
+
+O overfitting ocorre quando o modelo é muito complexo em relação à quantidade e ruído dos dados de treinamento. Aqui estão as soluções possíveis:
+
+- Simplifique o modelo selecionando um com menos parâmetros (por exemplo, um modelo linear em vez de um modelo polinomial de alto grau), reduzindo o número de atributos nos dados de treinamento ou restringindo o modelo.
+
+- Reúna mais dados de treinamento.
+
+- Reduza o ruído nos dados de treinamento (por exemplo, corrija erros de dados e remova outliers).
+
+---
+## Algoritmos ruins: Subajuste aos dados de treinamento
+
+Ocorre quando o modelo é muito simples para aprender a estrutura subjacente dos dados. Por exemplo, um modelo linear de satisfação com a vida tende a ser inadequado; a realidade é apenas mais complexa do que o modelo, então as previsões tendem a ser imprecisas, mesmo nos exemplos de treinamento.
+
+- Selecione um modelo mais potente, com mais parâmetros.
+
+- Alimente melhores recursos para o algoritmo de aprendizado (engenharia de recursos).
+
+- Reduzir as restrições no modelo (por exemplo, reduzindo o
+hiperparâmetro de regularização).Restringir um modelo para torná-lo mais simples e reduzir o risco de *overfitting* é chamado de regularização.
+
+---
+
+# Conjunto Teste e Avaliação
+
+- Depois de treinar um modelo, não se quer apenas “esperar” que generalize para novos casos. Se requer valiá-lo e ajustá-lo, se necessário.
+
+- Dividir os dados em dois conjuntos: o conjunto de treinamento e o conjunto de teste. Como esses nomes indicam, se treina o modelo usando o conjunto de treinamento e o testa usando o conjunto de teste. 
+
+- A taxa de erro em novos casos é chamada de *erro de generalização* (ou *out-of-sample error* e, ao avaliar o modelo no conjunto de teste, se obtém uma estimativa desse erro. Esse valor informa o desempenho do seu modelo em instâncias que nunca viu antes.
+
+---
+# Tamanhos dos conjuntos: treinamento e teste
+
+É comum usar `\(80 \%\)` dos dados para treinamento e manter `\(20 \%\)` para teste. No entanto, isso depende do tamanho do conjunto de dados:Se o conjutno de dados contiver `\(10\)` milhões de instâncias, manter `\(1 \%\)` significa que seu conjunto de teste conterá 100.000 instâncias, provavelmente mais do que o suficiente para obter uma boa estimativa do erro de generalização.
+
+---
+# Referência
+
+- Géron, A. (2022). Hands-on machine learning with Scikit-Learn, Keras, and TensorFlow. "O'Reilly Media, Inc".
+
+- Kuhn, M., &amp; Johnson, K. (2016). Applied predictive modeling. New York: Springer.
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
