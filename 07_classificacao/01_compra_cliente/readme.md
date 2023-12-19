@@ -12,7 +12,7 @@
 
 - ## Sistema, tarefa e ténica de ML
 
-- Qual tipo de supervisão de treinamento será necessário para o modelo? Será necessário um sistema de *ML* supervisionado, uma vez que que os individus são rotulados por sua condição de compra. 
+- Qual tipo de supervisão de treinamento será necessário para o modelo? Será necessário um sistema de *ML* supervisionado, uma vez que que os individus são rotulados por sua condição de compra. Consideram-se os modelos: `Logistic Regression`, `K-Nearest Neighbors (K-NN)`, `Support Vector Machine (SVM)`, `Kernel SVM`, `Naive Bayes`, `Decision Tree Classification`, e `Random Forest Classification`.
 
 - Qual será a tarefa desempenhada pelo modelo? Clasificação dos compradores. 
 
