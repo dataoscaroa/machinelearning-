@@ -14,6 +14,6 @@
 
 - Qual tipo de supervisão de treinamento será necessário para o modelo? Será necessário um sistema de *ML* supervisionado, uma vez que que os individus são rotulados por sua condição médica. 
 
-- Qual será a tarefa desempenhada pelo modelo? Clasificação do estado de saúde dos paciente. 
+- Qual será a tarefa desempenhada pelo modelo? Clasificação do estado de saúde dos paciente. Consideram-se os modelos: `Logistic Regression`, `K-Nearest Neighbors (K-NN)`, `Support Vector Machine (SVM)`, `Kernel SVM`, `Naive Bayes`, `Decision Tree Classification`, e `Random Forest Classification`.
 
 - Deve-se utilizar técnicas de aprendizado em lote ou em tempo real? Por lote, uma vez que o banco de dados não é atualizado rápidamente. 
