@@ -12,6 +12,6 @@
 
 ## Sistema, tarefa e ténica de ML
 
-- Qual tipo de supervisão de treinamento será necessário para o modelo? Será necessário um sistema de *ML* supervisionado, uma vez que cada imagem é rotulada com o dígito `5` que representa.
+- Qual tipo de supervisão de treinamento será necessário para o modelo? Será necessário um sistema de *ML* supervisionado, uma vez que cada imagem é rotulada com o dígito `5` que representa. onsideram-se os modelos: `Logistic Regression`, `K-Nearest Neighbors (K-NN)`, `Support Vector Machine (SVM)`, `Kernel SVM`, `Naive Bayes`, `Decision Tree Classification`, e `Random Forest Classification`.
 
 - Qual será a tarefa desempenhada pelo modelo? A tarefa é de classificação das imagens.
